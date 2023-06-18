@@ -1,2 +1,4 @@
 C:\Users\hugoa\source\repos\react_dweb\dweb_react\obj\Debug\dweb_react.esproj.SuggestedBindingRedirects.cache
 C:\Users\hugoa\source\repos\react_dweb\dweb_react\obj\Debug\dweb_react.esproj.CoreCompileInputs.cache
+C:\Users\hugo\Source\Repos\dweb_react\obj\Debug\dweb_react.esproj.SuggestedBindingRedirects.cache
+C:\Users\hugo\Source\Repos\dweb_react\obj\Debug\dweb_react.esproj.CoreCompileInputs.cache
