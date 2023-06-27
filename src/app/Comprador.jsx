@@ -20,8 +20,7 @@ class Comprador extends Component {
 
     }
     handleUserExists = (login_val, password_val) => {
-
-        fetch('https://localhost:7287/compradores', {
+        fetch('https://localhost:7287/compradores/test', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -32,11 +31,9 @@ class Comprador extends Component {
                 console.log(response);
             })
             .catch(error => {
-                // Handle the error here
                 console.error('Error:', error);
             });
-    }
-    
+    };
     
 
     render() {
@@ -51,7 +48,7 @@ class Comprador extends Component {
                             <label htmlFor="PasswordInput" className="form-label">Password</label>
                             <input type="text" className="form-control" id="passwordInput" placeholder="Escreva a sua password" />
 
-                            <button class="btn btn-outline-primary mt-3 " onClick={this.handleLogin} type="button">Login</button>
+                            <button className="btn btn-outline-primary mt-3 " onClick={this.handleLogin} type="button">Login</button>
                         </div>
                     </form>
                 </div>
