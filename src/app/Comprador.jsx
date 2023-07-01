@@ -17,10 +17,10 @@ class Comprador extends Component {
             try {
                 let userExists = await this.handleUserExists(login_val, password_val);
                 if (userExists) {
-                    console.log("User existe");
+                    console.log(this.state.userExisteResponse);
 
                 } else {
-                    console.log("User nao existe");
+                    console.log(this.state.userExisteResponse);
 
                 }
             } catch (error) {
@@ -30,7 +30,7 @@ class Comprador extends Component {
 
     }
     handleUserExists = (login_val, password_val) => {
-        return fetch('https://localhost:7287/compradores/test', {
+        return fetch('https://localhost:7287/compradores/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
