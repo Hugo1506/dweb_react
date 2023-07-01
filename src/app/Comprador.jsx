@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 class Comprador extends Component {
-    state = { login: "", password: "", userExisteResponse: "", mostrarRegistar:false }
+    state = { login: "", password: "", userExisteResponse: "", mostrarRegistar:false, userCriadoResponse: ""}
 
 
 
@@ -42,7 +42,6 @@ class Comprador extends Component {
                     return response.text().then(message => {
                         console.log(message);
                         this.setState({ userExisteResponse: message });
-
                         return true;
                     });
                 } else {
@@ -63,6 +62,10 @@ class Comprador extends Component {
          
     }
 
+    handleVoltarRegist = () => {
+        this.setState({ mostrarRegistar : false})
+    }
+
     handleCreateUser = () => {
         let email_val = document.getElementById('emailInput').value;
         let password_val = document.getElementById('passwordInput').value;
@@ -72,30 +75,59 @@ class Comprador extends Component {
         let telefone_val = document.getElementById('telefoneInput').value;
         let dinheiro_val = document.getElementById('dinheiroInput').value;
         const requestBody = JSON.stringify({ email: email_val, password: password_val, password_conf: password_conf_val, login: login_val, nome: nome_val, telefone: telefone_val, dinheiro: dinheiro_val })
-        return fetch('https://localhost:7287/compradores/createComprador', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: requestBody
-        })
-            .then(response => {
-                if (response.ok) {
-                    return response.text().then(message => {
-                        console.log(message);
+        if (email_val == "") {
+            document.getElementById('emailInput').placeholder = "o email n\u00E3o pode ser vazio";
+        }
+        if (password_val == "") {
+            document.getElementById('passwordInput').placeholder = "a password n\u00E3o pode ser vazia";
+        }
+        if (password_conf_val == "") {
+            document.getElementById('passwordInputConf').placeholder = "a confirma\u00E7\u00E3o de password n\u00E3o pode ser vazia";
+        }
+        if (login_val == "") {
+            document.getElementById('loginInput').placeholder = "o login n\u00E3o pode ser vazio";
+        }
+        if (nome_val == "") {
+            document.getElementById('nomeInput').placeholder = "o nome n\u00E3o pode ser vazio";
+        }
+        if (telefone_val == "") {
+            document.getElementById('telefoneInput').placeholder = "o telefone n\u00E3o pode ser vazio";
+        }
+         if (dinheiro_val == "") {
+             document.getElementById('dinheiroInput').placeholder = "o dinheiro n\u00E3o pode ser vazio";
+        }
+        if (email_val == "" || password_val == "" || password_conf_val== "" || login_val == "" || nome_val == "" || telefone_val == "" || dinheiro_val == "") {
 
-
-                    });
-                } else {
-                    return response.text().then(message => {
-                        console.log(message);
-
-                    });
-                }
+        }else {
+            return fetch('https://localhost:7287/compradores/createComprador', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: requestBody
             })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+                .then(response => {
+                    if (response.ok) {
+                        return response.text().then(message => {
+                            console.log(message);
+                            this.setState({ userCriadoResponse: message });
+
+                        });
+                    } else {
+                        return response.text().then(message => {
+                            console.log(message);
+                            this.setState({ userCriadoResponse: message });
+
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+            
+        
+       
     }
 
     
@@ -103,12 +135,15 @@ class Comprador extends Component {
     render() {
         let loginErro = "";
         loginErro = this.state.userExisteResponse;
+        let registErro = this.state.userCriadoResponse;
         if (this.state.mostrarRegistar) {
             return (
-                <div className="row">
+                <div className="row" style={{ width: "1000px" }}>
                     <h4>Bem-vindo &agrave; loja Online</h4>
                     <span>Registar</span>
-                    <div className="col-lg-6">         
+                    <p>{registErro} </p>
+                    <div className="col-lg-6">  
+                        
                         <form id="screen">
                             <div className="mb-4">
                                 <label htmlFor="emailInput" className="form-label">Email</label>
@@ -140,6 +175,7 @@ class Comprador extends Component {
                                 <input type="text" className="form-control" id="dinheiroInput" placeholder="Escreva o seu dinheiro" />
                                 <br/>
                                 <button className="btn btn-primary btn-lg mt-3" onClick={this.handleCreateUser} type="button">Registar</button>
+                                <button className="btn btn-primary btn-lg mt-3" onClick={this.handleVoltarRegist} type="button">Voltar</button>
                             </div>
                         </form>
                     </div>
@@ -147,7 +183,7 @@ class Comprador extends Component {
             );
         }
         return (
-            <div className="row">        
+            <div className="row" style={{ width: "500px" }}>        
                 <div className="col-12">
                     <h4>Bem vindo &agrave; loja Online</h4>
                     <form id= "screen">
