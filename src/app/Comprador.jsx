@@ -1,6 +1,16 @@
 import React, { Component } from 'react';
 class Comprador extends Component {
-    state = { login: "", password: "", userExisteResponse: "", mostrarRegistar:false, userCriadoResponse: ""}
+    state = {
+        login: "",
+        password: "",
+        userExisteResponse: "",
+        mostrarRegistar: false,
+        userCriadoResponse: "",
+        mostraMenu: false,
+        mostraCriarProduto: false,
+        criarProdutoResponse: "",
+        mostraCriarAnuncio: false
+    }
 
 
 
@@ -18,6 +28,7 @@ class Comprador extends Component {
                 let userExists = await this.handleUserExists(login_val, password_val);
                 if (userExists) {
                     console.log(this.state.userExisteResponse);
+                    
 
                 } else {
                     console.log(this.state.userExisteResponse);
@@ -41,6 +52,9 @@ class Comprador extends Component {
                 if (response.ok) {
                     return response.text().then(message => {
                         console.log(message);
+                        if (message == "estou login") {
+                            this.setState({ mostraMenu: true });
+                        }
                         this.setState({ userExisteResponse: message });
                         return true;
                     });
@@ -64,6 +78,53 @@ class Comprador extends Component {
 
     handleVoltarRegist = () => {
         this.setState({ mostrarRegistar : false})
+    }
+
+    handleMostraCriarProduto = () => {
+        this.setState({ mostraMenu: false });
+        this.setState({ mostraCriarProduto: true }) 
+    }
+
+    handleCriarProduto = () => {
+        let nomeProduto = document.getElementById('nomeProdutoInput').value;
+        let descricaoProduto = document.getElementById('descricaoProdutoInput').value;
+
+        return fetch('https://localhost:7287/compradores/createProdutos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ nome: nomeProduto, descricao: descricaoProduto })
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.text().then(message => {
+                        console.log(message);
+                        this.setState({ criarProdutoResponse: message });
+                    });
+                } else {
+                    return response.text().then(message => {
+                        console.log(message);
+                        this.setState({ criarProdutoResponse: message });
+
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        
+
+    }
+
+    handleMostraCriarAnuncio = () => {
+        this.setState({ mostraMenu: false });
+        this.setState({ mostraCriarAnuncio: true });
+    }
+
+    handleVoltaCriarProduto = () => {
+        this.setState({ mostraCriarProduto: false });
+        this.setState({ mostraMenu: true });
     }
 
     handleCreateUser = () => {
@@ -136,6 +197,9 @@ class Comprador extends Component {
         let loginErro = "";
         loginErro = this.state.userExisteResponse;
         let registErro = this.state.userCriadoResponse;
+        let criarProdutoMessage = this.state.criarProdutoResponse;
+
+
         if (this.state.mostrarRegistar) {
             return (
                 <div className="row" style={{ width: "1000px" }}>
@@ -181,6 +245,56 @@ class Comprador extends Component {
                     </div>
                 </div>
             );
+        }
+        if (this.state.mostraMenu) {
+            return (
+                <div className="row" style={{ width: "500px" }}>
+                    <div className="col-12">
+                        <h4>Bem vindo &agrave; loja Online</h4>
+                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraCriarProduto} type="button">Criar um produto</button>
+                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraCriarAnuncio} type="button">Criar um anuncio</button>
+                        
+                    </div>
+                </div>
+                )
+        }
+
+        if (this.state.mostraCriarProduto) {
+            return (
+                <div className="row" style={{ width: "500px" }}>
+                    <div className="col-12">
+                        <h4>Criar um produto</h4>
+                        <p>{criarProdutoMessage}</p>
+                        <label htmlFor="nomeProdutoInput" className="form-label">Nome</label>
+                        <input type="text" className="form-control" id="nomeProdutoInput" placeholder="Escreva o nome do produto" />
+
+                        <label htmlFor="descricaoProdutoInput" className="form-label">descri&ccedil;&atilde;o</label>
+                        <input type="text" className="form-control" id="descricaoProdutoInput" placeholder="Escreva a descri&ccedil;&atilde;o do produto" />
+
+                        <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleCriarProduto} type="button">Criar</button>
+                        <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleVoltaCriarProduto} type="button">Voltar</button>
+
+                    </div>
+                </div>
+            )
+            
+        }
+
+        if (this.state.mostraCriarAnuncio) {
+            return (
+                <div className="row" style={{ width: "500px" }}>
+                    <div className="col-12">
+                        <h4>Criar um anuncio</h4>
+                        <label htmlFor="precoAnuncioInput" className="form-label">pre&ccedil;o</label>
+                        <input type="text" className="form-control" id="nomeProdutoInput" placeholder="Escreva o pre&ccedil;o do anuncio" />
+
+
+                        <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleCriarProduto} type="button">Criar</button>
+                        <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleVoltaCriarProduto} type="button">Voltar</button>
+
+                    </div>
+                </div>
+            )
         }
         return (
             <div className="row" style={{ width: "500px" }}>        
