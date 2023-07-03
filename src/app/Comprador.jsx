@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 class Comprador extends Component {
     state = {
+        userId: "",
         login: "",
         password: "",
         userExisteResponse: "",
@@ -9,7 +10,9 @@ class Comprador extends Component {
         mostraMenu: false,
         mostraCriarProduto: false,
         criarProdutoResponse: "",
-        mostraCriarAnuncio: false
+        mostraCriarAnuncio: false,
+        produtos: [],
+        criarAnuncioResponse:""
     }
 
 
@@ -52,11 +55,12 @@ class Comprador extends Component {
                 if (response.ok) {
                     return response.text().then(message => {
                         console.log(message);
-                        if (message == "estou login") {
+                        if (message != "O user existe" && message != "Password incorreta" && message != "formato errado") {
                             this.setState({ mostraMenu: true });
+                            this.setState({ userId: message });
+                            return true;
                         }
-                        this.setState({ userExisteResponse: message });
-                        return true;
+                        
                     });
                 } else {
                     return response.text().then(message => {
@@ -125,6 +129,52 @@ class Comprador extends Component {
     handleVoltaCriarProduto = () => {
         this.setState({ mostraCriarProduto: false });
         this.setState({ mostraMenu: true });
+    }
+
+    handleGetProdutos = () => {
+        fetch("https://localhost:7287/compradores/getProdutos")
+            .then(res => res.json())
+            .then(result => {
+                console.log(result)
+        this.setState({ produtos: result })
+            })
+            .catch(error => console.log('error', error));
+    }
+
+    handleCriarAnuncio = () => {
+        let preco = document.getElementById('precoAnuncioInput').value;
+        let produto_nome = document.getElementById('produtoAnuncioInput').value;
+        let produto = this.state.produtos.find((produto) => produto.nome === produto_nome);
+
+        let produto_id = produto.id.toString();
+        console.log(preco);
+        console.log(produto_id);
+        const requestBody = JSON.stringify({ produto_id: produto_id, preco: preco, userId: this.state.userId })
+        return fetch('https://localhost:7287/compradores/createAnuncio', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: requestBody
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.text().then(message => {
+                        console.log(message);
+                        this.setState({ criarAnuncioResponse: message });
+
+                    });
+                } else {
+                    return response.text().then(message => {
+                        console.log(message);
+                        this.setState({ criarAnuncioResponse: message });
+
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
     }
 
     handleCreateUser = () => {
@@ -198,7 +248,7 @@ class Comprador extends Component {
         loginErro = this.state.userExisteResponse;
         let registErro = this.state.userCriadoResponse;
         let criarProdutoMessage = this.state.criarProdutoResponse;
-
+        let criarAnuncioMessage = this.state.criarAnuncioResponse;
 
         if (this.state.mostrarRegistar) {
             return (
@@ -281,15 +331,24 @@ class Comprador extends Component {
         }
 
         if (this.state.mostraCriarAnuncio) {
+            this.handleGetProdutos();
+            const options = this.state.produtos.map((produto) => (
+                <option key={produto.id} value={produto.nome}>{produto.nome}</option>
+            ));
             return (
                 <div className="row" style={{ width: "500px" }}>
                     <div className="col-12">
                         <h4>Criar um anuncio</h4>
+                        <p>{criarAnuncioMessage}</p>
                         <label htmlFor="precoAnuncioInput" className="form-label">pre&ccedil;o</label>
-                        <input type="text" className="form-control" id="nomeProdutoInput" placeholder="Escreva o pre&ccedil;o do anuncio" />
+                        <input type="text" className="form-control" id="precoAnuncioInput" placeholder="Escreva o pre&ccedil;o do anuncio" />
 
+                        <label htmlFor="produtoAnuncioInput" className="form-label">produto</label>
+                        <select className="form-select mt-3" id="produtoAnuncioInput">
+                            {options}
+                        </select>
 
-                        <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleCriarProduto} type="button">Criar</button>
+                        <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleCriarAnuncio} type="button">Criar</button>
                         <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleVoltaCriarProduto} type="button">Voltar</button>
 
                     </div>
