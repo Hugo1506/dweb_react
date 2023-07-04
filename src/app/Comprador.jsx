@@ -12,7 +12,9 @@ class Comprador extends Component {
         criarProdutoResponse: "",
         mostraCriarAnuncio: false,
         produtos: [],
-        criarAnuncioResponse:""
+        criarAnuncioResponse: "",
+        mostraVerAnuncios: false,
+        anuncios: []
     }
 
 
@@ -124,6 +126,7 @@ class Comprador extends Component {
     handleMostraCriarAnuncio = () => {
         this.setState({ mostraMenu: false });
         this.setState({ mostraCriarAnuncio: true });
+        this.handleGetProdutos();
     }
 
     handleVoltaCriarProduto = () => {
@@ -140,6 +143,30 @@ class Comprador extends Component {
             })
             .catch(error => console.log('error', error));
     }
+
+    handleMostraVerAnuncios = () => {
+        this.setState({ mostraMenu: false });
+        this.setState({ mostraVerAnuncios: true });
+        this.handleGetProdutos();
+        this.handleGetAnuncios();
+    }
+
+    handleGetAnuncios = () => {
+        fetch("https://localhost:7287/compradores/getAnuncios")
+            .then(res => res.json())
+            .then(result => {
+                console.log(result)
+                this.setState({ anuncios: result })
+            })
+            .catch(error => console.log('error', error));
+    }
+
+    handleVoltaVerAnuncios = () => {
+        this.setState({ mostraVerAnuncios: false });
+        this.setState({ mostraMenu: true });
+    }
+
+ 
 
     handleCriarAnuncio = () => {
         let preco = document.getElementById('precoAnuncioInput').value;
@@ -241,6 +268,13 @@ class Comprador extends Component {
        
     }
 
+    handleNomeProduto(produtoFK) {
+        let listaProdutos = this.state.produtos;
+        let produtoEncontrado = listaProdutos.find(produto => produto.id == produtoFK)
+        let produtoNome = produtoEncontrado.nome;
+        return produtoNome;
+    }
+
     
 
     render() {
@@ -249,6 +283,13 @@ class Comprador extends Component {
         let registErro = this.state.userCriadoResponse;
         let criarProdutoMessage = this.state.criarProdutoResponse;
         let criarAnuncioMessage = this.state.criarAnuncioResponse;
+        let listaAnuncios = [];
+        
+
+        this.state.anuncios.forEach(element =>
+            listaAnuncios.push(<li class="list-group-item" style={{ margin: '15px' }}>
+                {this.handleNomeProduto(element.produtoFK)} {element.preco} &euro; </li>)
+            );
 
         if (this.state.mostrarRegistar) {
             return (
@@ -303,7 +344,8 @@ class Comprador extends Component {
                         <h4>Bem vindo &agrave; loja Online</h4>
                         <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraCriarProduto} type="button">Criar um produto</button>
                         <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraCriarAnuncio} type="button">Criar um anuncio</button>
-                        
+                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraVerAnuncios} type="button">Ver anuncios</button>
+
                     </div>
                 </div>
                 )
@@ -331,7 +373,7 @@ class Comprador extends Component {
         }
 
         if (this.state.mostraCriarAnuncio) {
-            this.handleGetProdutos();
+            
             const options = this.state.produtos.map((produto) => (
                 <option key={produto.id} value={produto.nome}>{produto.nome}</option>
             ));
@@ -355,6 +397,20 @@ class Comprador extends Component {
                 </div>
             )
         }
+
+        if (this.state.mostraVerAnuncios) {
+            return (
+                <div className="row" style={{ width: "500px" }}>
+                    <div className="col-12">
+                        <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleVoltaVerAnuncios} type="button">Voltar</button>
+                        <ul className="list-group">
+                            {listaAnuncios}
+                        </ul>
+                    </div>
+                </div>
+            )
+        }
+
         return (
             <div className="row" style={{ width: "500px" }}>        
                 <div className="col-12">
