@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import "./UI.css";
 class Comprador extends Component {
     state = {
         userId: "",
@@ -14,7 +15,9 @@ class Comprador extends Component {
         produtos: [],
         criarAnuncioResponse: "",
         mostraVerAnuncios: false,
-        anuncios: []
+        anuncios: [],
+        vendedorNome: "",
+        saldo: 0.0,
     }
 
 
@@ -144,11 +147,12 @@ class Comprador extends Component {
             .catch(error => console.log('error', error));
     }
 
-    handleMostraVerAnuncios = () => {
+    handleMostraVerAnuncios =async () => {
         this.setState({ mostraMenu: false });
-        this.setState({ mostraVerAnuncios: true });
-        this.handleGetProdutos();
+        await this.handleGetProdutos();
         this.handleGetAnuncios();
+        this.setState({ mostraVerAnuncios: true });
+        this.handleVerSaldo();
     }
 
     handleGetAnuncios = () => {
@@ -164,6 +168,7 @@ class Comprador extends Component {
     handleVoltaVerAnuncios = () => {
         this.setState({ mostraVerAnuncios: false });
         this.setState({ mostraMenu: true });
+        this.setState({ anuncios: [] });       
     }
 
  
@@ -275,6 +280,59 @@ class Comprador extends Component {
         return produtoNome;
     }
 
+
+    handleComprar = (id) => {
+        let user_val = this.state.userId;
+        let anuncio_val = id.toString();
+        console.log(anuncio_val);
+        const requestBody = JSON.stringify({ anuncio: anuncio_val , user: user_val })
+
+        this.handleVerSaldo();
+        return fetch('https://localhost:7287/compradores/postComprar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: requestBody
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.text().then(message => {
+                        console.log(message);
+                        this.setState({ saldo: parseFloat(message) });
+
+                    });
+                } else {
+                    return response.text().then(message => {
+                        console.log(message);
+
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+    handleVendedorNome = (id) => {
+        let anuncio = this.state.anuncios.find((anuncio) => anuncio.id == id); 
+        if (anuncio.vendedorFK != null) {
+            this.setState({ vendedorNome: anuncio.vendedorFK });
+            return this.state.vendedorNome;
+        }
+    }
+
+
+    handleVerSaldo = () => {
+        const userId = this.state.userId;
+        fetch('https://localhost:7287/compradores/getSaldo?userId=' + userId)
+            .then(res => res.json())
+            .then(result => {
+                console.log(result)
+                this.setState({ saldo: result })
+            })
+            .catch(error => console.log('error', error));
+    }
+
     
 
     render() {
@@ -286,10 +344,7 @@ class Comprador extends Component {
         let listaAnuncios = [];
         
 
-        this.state.anuncios.forEach(element =>
-            listaAnuncios.push(<li class="list-group-item" style={{ margin: '15px' }}>
-                {this.handleNomeProduto(element.produtoFK)} {element.preco} &euro; </li>)
-            );
+        
 
         if (this.state.mostrarRegistar) {
             return (
@@ -399,11 +454,27 @@ class Comprador extends Component {
         }
 
         if (this.state.mostraVerAnuncios) {
+            this.state.anuncios.forEach(element => {
+                listaAnuncios.push(<li className="list-group-item" style={{ margin: '15px', display: 'flex', justifyContent: 'space-between' }} >
+                    <p style={{ display: 'inline-block', textAlign: 'left' }}>
+                        Nome do produto: {this.handleNomeProduto(element.produtoFK)}<br />
+                        pre&ccedil;o: {element.preco} &euro;<br />
+                        nome do vendedor: {this.handleVendedorNome(element.id)}
+                    </p>
+                    <button className="btn btn-secondary btn-lg mt-3" style={{ fontSize: 'inherit' }} onClick={() => this.handleComprar(element.id)} type="button" >
+                        Comprar
+                    </button >
+                </li>,
+                )
+            });
             return (
-                <div className="row" style={{ width: "500px" }}>
+                <div className="row" style={{ width: "700px", paddingTop: "50px" }}>
                     <div className="col-12">
-                        <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleVoltaVerAnuncios} type="button">Voltar</button>
-                        <ul className="list-group">
+                        <div className="fixed-bar">
+                            <span style={{ marginRight: '10px' }}>Saldo: {this.state.saldo} &euro;</span>
+                            <button className="btn btn-primary btn-lg mt-3"  onClick={this.handleVoltaVerAnuncios} type="button">Voltar</button>          
+                        </div>
+                        <ul className="list-group" style={{ marginTop:"15px"}}>
                             {listaAnuncios}
                         </ul>
                     </div>
