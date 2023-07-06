@@ -18,6 +18,8 @@ class Comprador extends Component {
         anuncios: [],
         vendedorNome: "",
         saldo: 0.0,
+        listaReviews: [],
+        mostraVerReviews: false,
     }
 
 
@@ -299,7 +301,7 @@ class Comprador extends Component {
                 if (response.ok) {
                     return response.text().then(message => {
                         console.log(message);
-                        this.setState({ saldo: parseFloat(message) });
+                        this.setState({ saldo: message });
 
                     });
                 } else {
@@ -333,6 +335,32 @@ class Comprador extends Component {
             .catch(error => console.log('error', error));
     }
 
+
+    handleGetReviews = (id) => {
+        fetch('https://localhost:7287/compradores/getReviews?anunc=' + id)
+            .then(res => res.json())
+            .then(result => {
+                console.log(result)
+                this.setState({ listaReviews: result })
+            })
+            .catch(error => console.log('error', error));
+    }
+
+    handleVerReviews = (id) => {
+        this.handleGetReviews(id);
+        this.setState({ mostraVerAnuncios: false });
+        this.setState({ mostraVerReviews: true });
+    }
+
+    handleVoltaVerReviews = () => {
+        this.setState({ listaReviews: [] });
+        this.setState({ anuncios: [] });
+        this.setState({ mostraVerAnuncios: true });
+        this.setState({ mostraVerReviews: false });
+        this.handleGetAnuncios();
+    }
+
+
     
 
     render() {
@@ -342,8 +370,7 @@ class Comprador extends Component {
         let criarProdutoMessage = this.state.criarProdutoResponse;
         let criarAnuncioMessage = this.state.criarAnuncioResponse;
         let listaAnuncios = [];
-        
-
+        let reviews = [];
         
 
         if (this.state.mostrarRegistar) {
@@ -455,16 +482,29 @@ class Comprador extends Component {
 
         if (this.state.mostraVerAnuncios) {
             this.state.anuncios.forEach(element => {
-                listaAnuncios.push(<li className="list-group-item" style={{ margin: '15px', display: 'flex', justifyContent: 'space-between' }} >
-                    <p style={{ display: 'inline-block', textAlign: 'left' }}>
+                listaAnuncios.push(<li
+                    className="list-group-item"
+                    style={{
+                        margin: '15px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        borderRight: '4px solid #585c64',
+                        borderBottom: '4px solid #585c64'
+                    }}
+                    >
+                    <p style={{ display: 'inline-block', textAlign: 'left' }}        
+                    >
                         Nome do produto: {this.handleNomeProduto(element.produtoFK)}<br />
                         pre&ccedil;o: {element.preco} &euro;<br />
                         nome do vendedor: {this.handleVendedorNome(element.id)}
                     </p>
-                    <button className="btn btn-secondary btn-lg mt-3" style={{ fontSize: 'inherit' }} onClick={() => this.handleComprar(element.id)} type="button" >
+                    <button  className="btn btn-secondary btn-lg mt-3" style={{ fontSize: 'inherit' }} onClick={() => this.handleComprar(element.id)} type="button" >
                         Comprar
                     </button >
-                </li>,
+                    <button className="btn btn-secondary btn-lg mt-3" style={{ fontSize: 'inherit' }} onClick={() => this.handleVerReviews(element.id)} type="button" >
+                        Ver Reviews
+                    </button >
+                </li>
                 )
             });
             return (
@@ -481,6 +521,36 @@ class Comprador extends Component {
                 </div>
             )
         }
+
+        if (this.state.mostraVerReviews) {
+            this.state.listaReviews.forEach(element => {
+                reviews.push(<li
+                    className="list-group-item"
+                    style={{
+                        margin: '15px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        borderRight: '4px solid #585c64',
+                        borderBottom: '4px solid #585c64'
+                    }}
+                >
+                    {element.conteudo}
+                </li>)
+
+
+            })
+            return (
+                <div className="row" style={{ width: "500px" }}>
+                    <div className="col-12">
+                        {reviews}
+                        <div className="fixed-bar">
+                            <button className="btn btn-primary btn-lg mt-3" onClick={this.handleVoltaVerReviews} type="button">Voltar</button>          
+                        </div>
+
+                    </div>
+                </div>
+                 
+        )}
 
         return (
             <div className="row" style={{ width: "500px" }}>        
