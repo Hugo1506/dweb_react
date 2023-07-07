@@ -16,10 +16,11 @@ class Comprador extends Component {
         criarAnuncioResponse: "",
         mostraVerAnuncios: false,
         anuncios: [],
-        vendedorNome: "",
+        anuncioClicado: 0,
         saldo: 0.0,
         listaReviews: [],
         mostraVerReviews: false,
+        mostraEscreverReview: false,
     }
 
 
@@ -315,13 +316,7 @@ class Comprador extends Component {
                 console.error('Error:', error);
             });
     }
-    handleVendedorNome = (id) => {
-        let anuncio = this.state.anuncios.find((anuncio) => anuncio.id == id); 
-        if (anuncio.vendedorFK != null) {
-            this.setState({ vendedorNome: anuncio.vendedorFK });
-            return this.state.vendedorNome;
-        }
-    }
+
 
 
     handleVerSaldo = () => {
@@ -350,6 +345,7 @@ class Comprador extends Component {
         this.handleGetReviews(id);
         this.setState({ mostraVerAnuncios: false });
         this.setState({ mostraVerReviews: true });
+        this.setState({ anuncioClicado: id });
     }
 
     handleVoltaVerReviews = () => {
@@ -360,7 +356,45 @@ class Comprador extends Component {
         this.handleGetAnuncios();
     }
 
+    handleMostraEscreverReview = () => {
+            this.setState({ mostraVerReviews: false });
+            this.setState({mostraEscreverReview : true})
+            
+    }
 
+    handleVoltaEscreverReview = () => {
+        this.setState({ mostraEscreverReview: false });
+        this.setState({ mostraVerReviews: true });
+    }
+
+    handleCriarReview = () => {
+        let conteudo_val = document.getElementById("conteudoInput").value;
+        let user_val = this.state.userId;
+        let anuncio_val = this.state.anuncioClicado;
+        if (conteudo_val == "") {
+            document.getElementById("conteudoInput").placeholder = "O conteudo da review n\u00E3o pode ser vazio";
+        } else {
+            const requestBody = JSON.stringify({ conteudo: conteudo_val, user: user_val, anuncio: anuncio_val.toString() })
+            return fetch('https://localhost:7287/compradores/createReview', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: requestBody
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.text().then(message => {
+                            console.log(message);                   
+
+                        });
+                    } 
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    }
     
 
     render() {
@@ -496,7 +530,7 @@ class Comprador extends Component {
                     >
                         Nome do produto: {this.handleNomeProduto(element.produtoFK)}<br />
                         pre&ccedil;o: {element.preco} &euro;<br />
-                        nome do vendedor: {this.handleVendedorNome(element.id)}
+                        nome do vendedor: {element.vendedorFK}
                     </p>
                     <button  className="btn btn-secondary btn-lg mt-3" style={{ fontSize: 'inherit' }} onClick={() => this.handleComprar(element.id)} type="button" >
                         Comprar
@@ -523,34 +557,60 @@ class Comprador extends Component {
         }
 
         if (this.state.mostraVerReviews) {
-            this.state.listaReviews.forEach(element => {
-                reviews.push(<li
-                    className="list-group-item"
-                    style={{
-                        margin: '15px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        borderRight: '4px solid #585c64',
-                        borderBottom: '4px solid #585c64'
-                    }}
-                >
-                    {element.conteudo}
-                </li>)
+            const reviews = this.state.listaReviews.map(element => {
 
-
-            })
+                return (
+                    <li
+                        className="list-group-item"
+                        style={{
+                            margin: '15px',
+                            display: 'flex',
+                            backgroundColor: '#ffffff',
+                            color: '#000000',
+                            justifyContent: 'space-between',
+                            borderRight: '4px solid #585c64',
+                            borderBottom: '4px solid #585c64'
+                        }}
+                        key={element.id} 
+                    >
+                        <p style={{ display: 'inline-block', textAlign: 'left', margin: '5px' }}>
+                            {element.compradorFK} < br /> <br />
+                            {element.conteudo}
+                        </p>
+                    </li>
+                );
+            });
             return (
                 <div className="row" style={{ width: "500px" }}>
                     <div className="col-12">
                         {reviews}
                         <div className="fixed-bar">
+                            <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraEscreverReview} type="button">escrever uma review</button>          
+
                             <button className="btn btn-primary btn-lg mt-3" onClick={this.handleVoltaVerReviews} type="button">Voltar</button>          
                         </div>
 
                     </div>
                 </div>
                  
-        )}
+            )
+        }
+
+        if (this.state.mostraEscreverReview) {
+            return (
+                <div className="row" style={{ width: "500px" }}>
+                    <div className="col-12">
+                        <h4>Escreva uma review</h4>
+                        <label htmlFor="conteudoInput" className="form-label">conteudo</label>
+                        <textarea style={{ height:"100px" }} type="textArea" className="form-control" id="conteudoInput" placeholder="Escreva a sua review aqui" />
+
+                        <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleCriarReview} type="button">Criar</button>
+                        <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleVoltaEscreverReview} type="button">Voltar</button>
+
+                    </div>
+                </div>
+            )
+        }
 
         return (
             <div className="row" style={{ width: "500px" }}>        
