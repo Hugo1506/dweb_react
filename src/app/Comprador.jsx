@@ -21,6 +21,7 @@ class Comprador extends Component {
         listaReviews: [],
         mostraVerReviews: false,
         mostraEscreverReview: false,
+        mostraProdutosComprados: false,
     }
 
 
@@ -395,6 +396,40 @@ class Comprador extends Component {
                 });
         }
     }
+
+    handleVerAnunciosClick = (vendedor) => {
+        fetch('https://localhost:7287/compradores/getAnunciosVendedor?vend=' + vendedor)
+            .then(res => res.json())
+            .then(result => {
+                console.log(result)
+                this.setState({ anuncios: result });
+            })
+            .catch(error => console.log('error', error));
+    }
+
+    handleMostraProdutosComprados = () => {
+        this.setState({ mostraMenu: false });
+        this.setState({ mostraProdutosComprados: true });
+        this.handleGetProdutosComprados();
+    }
+
+    handleGetProdutosComprados = () => {
+        let user = this.state.userId;
+        fetch('https://localhost:7287/compradores/getProdutosComprados?user=' + user)
+            .then(res => res.json())
+            .then(result => {
+                console.log(result)
+                this.setState({ produtos: result });
+            })
+            .catch(error => console.log('error', error));
+    }
+
+    handleVoltarProdutosComprados = () => {
+        this.setState({ mostraMenu: true });
+        this.setState({ mostraProdutosComprados: false });
+    }
+
+
     
 
     render() {
@@ -404,7 +439,7 @@ class Comprador extends Component {
         let criarProdutoMessage = this.state.criarProdutoResponse;
         let criarAnuncioMessage = this.state.criarAnuncioResponse;
         let listaAnuncios = [];
-        let reviews = [];
+        let listaProdutos = [];
         
 
         if (this.state.mostrarRegistar) {
@@ -461,6 +496,7 @@ class Comprador extends Component {
                         <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraCriarProduto} type="button">Criar um produto</button>
                         <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraCriarAnuncio} type="button">Criar um anuncio</button>
                         <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraVerAnuncios} type="button">Ver anuncios</button>
+                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraProdutosComprados} type="button">Ver os produtos que comprei</button>
 
                     </div>
                 </div>
@@ -525,12 +561,15 @@ class Comprador extends Component {
                         borderRight: '4px solid #585c64',
                         borderBottom: '4px solid #585c64'
                     }}
+                    key={element.id}
                     >
                     <p style={{ display: 'inline-block', textAlign: 'left' }}        
                     >
                         Nome do produto: {this.handleNomeProduto(element.produtoFK)}<br />
                         pre&ccedil;o: {element.preco} &euro;<br />
-                        nome do vendedor: {element.vendedorFK}
+                        nome do vendedor: <a onClick={() => this.handleVerAnunciosClick(element.vendedorFK)}
+                            style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+                        >{element.vendedorFK}</a>
                     </p>
                     <button  className="btn btn-secondary btn-lg mt-3" style={{ fontSize: 'inherit' }} onClick={() => this.handleComprar(element.id)} type="button" >
                         Comprar
@@ -547,6 +586,7 @@ class Comprador extends Component {
                         <div className="fixed-bar">
                             <span style={{ marginRight: '10px' }}>Saldo: {this.state.saldo} &euro;</span>
                             <button className="btn btn-primary btn-lg mt-3"  onClick={this.handleVoltaVerAnuncios} type="button">Voltar</button>          
+                            <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraVerAnuncios} type="button">&#x27f3;</button>          
                         </div>
                         <ul className="list-group" style={{ marginTop:"15px"}}>
                             {listaAnuncios}
@@ -611,6 +651,43 @@ class Comprador extends Component {
                 </div>
             )
         }
+        if (this.state.mostraProdutosComprados) {
+            console.log(this.state.produtos);
+            this.state.produtos.forEach((element,index) => {
+                listaProdutos.push(<li
+                    key={index }
+                    className="list-group-item"
+                    style={{
+                        margin: '15px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        borderRight: '4px solid #585c64',
+                        borderBottom: '4px solid #585c64'
+                    }}
+                >
+                    <p style={{ display: 'inline-block', textAlign: 'left' }}
+                    >
+                        Nome do produto: {element.nome}<br/>
+                        Descri&ccedil;&atilde;o: {element.descricao}
+                    </p>
+                </li>
+                )
+            });
+
+            return (
+                <div className="row" style={{ width: "700px", paddingTop: "50px" }}>
+                    <div className="col-12">
+                        <div className="fixed-bar">
+                            <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleVoltarProdutosComprados} type="button">Voltar</button>
+                        </div>
+                        <ul className="list-group" style={{ marginTop: "15px" }}>
+                            {listaProdutos}
+                        </ul>
+                    </div>
+                </div>
+         
+                )
+        }
 
         return (
             <div className="row" style={{ width: "500px" }}>        
@@ -634,6 +711,7 @@ class Comprador extends Component {
                 </div>
             </div>
         );
+        
     }
 }
 
