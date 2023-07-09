@@ -22,6 +22,11 @@ class Comprador extends Component {
         mostraVerReviews: false,
         mostraEscreverReview: false,
         mostraProdutosComprados: false,
+        mostraVerMinhasReviews: false,
+        minhasReviews: [],
+        mostrarVerAnuncioClicado: false,
+        nomeProduto: "",
+
     }
 
 
@@ -134,6 +139,10 @@ class Comprador extends Component {
         this.setState({ mostraMenu: false });
         this.setState({ mostraCriarAnuncio: true });
         this.handleGetProdutos();
+    }
+    handleVoltaCriarAnuncio = () => {
+        this.setState({ mostraCriarAnuncio: false });
+        this.setState({ mostraMenu: true });
     }
 
     handleVoltaCriarProduto = () => {
@@ -278,6 +287,7 @@ class Comprador extends Component {
     }
 
     handleNomeProduto(produtoFK) {
+        this.handleGetProdutos();
         let listaProdutos = this.state.produtos;
         let produtoEncontrado = listaProdutos.find(produto => produto.id == produtoFK)
         let produtoNome = produtoEncontrado.nome;
@@ -325,7 +335,6 @@ class Comprador extends Component {
         fetch('https://localhost:7287/compradores/getSaldo?userId=' + userId)
             .then(res => res.json())
             .then(result => {
-                console.log(result)
                 this.setState({ saldo: result })
             })
             .catch(error => console.log('error', error));
@@ -429,7 +438,57 @@ class Comprador extends Component {
         this.setState({ mostraProdutosComprados: false });
     }
 
+    handleGetMinhasReviews = () => {
+        let user = this.state.userId;
+        fetch('https://localhost:7287/compradores/getMeusReviews?user=' + user)
+            .then(res => res.json())        
+            .then(result => {
+                console.log(result)
+                this.setState({ minhasReviews: result });
+            })
+            .catch(error => console.log('error', error));
+    }
 
+    handleVerMinhasReviews = () => {
+        this.handleGetMinhasReviews();
+        this.setState({ mostraVerMinhasReviews: true });
+        this.setState({ mostraMenu: false });
+    }
+
+    handleVoltarMinhasReviews = () => {
+        this.setState({ mostraVerMinhasReviews: false });
+        this.setState({ mostraMenu: true });
+    }
+
+    handleMostarAnuncioClicado = (id) => {
+        this.setState({ mostraVerMinhasReviews: false });
+        this.handleGetAnuncioById(id);
+        this.setState({ mostrarVerAnuncioClicado:true })
+    }
+    handleGetAnuncioById = (id) => {
+        fetch('https://localhost:7287/compradores/getAnuncioById?anunc=' + id)
+            .then(res => res.json())
+            .then(result => {
+                console.log(result)
+                this.setState({ anuncios: result });
+            })
+            .catch(error => console.log('error', error));
+    }
+
+    handleVoltarAnuncioClicado = () => {
+        this.handleGetProdutos();
+        this.setState({ mostrarVerAnuncioClicado: false });
+        this.setState({ mostraVerMinhasReviews: true });
+    }
+
+    handleNomeProdutoById = (id) => {
+        fetch('https://localhost:7287/compradores/getProdutoNomeById?id=' + id)
+            .then(res => res.json())
+            .then(result => {
+                this.setState({ nomeProduto: result });
+            })
+            .catch(error => console.log('error', error));
+    }
     
 
     render() {
@@ -440,6 +499,7 @@ class Comprador extends Component {
         let criarAnuncioMessage = this.state.criarAnuncioResponse;
         let listaAnuncios = [];
         let listaProdutos = [];
+        let listaMinhasReviews = [];
         
 
         if (this.state.mostrarRegistar) {
@@ -489,15 +549,19 @@ class Comprador extends Component {
             );
         }
         if (this.state.mostraMenu) {
+            this.handleVerSaldo();
             return (
                 <div className="row" style={{ width: "500px" }}>
                     <div className="col-12">
+                        <div className="fixed-bar">
+                            <span style={{ marginRight: '10px' }}>Saldo: {this.state.saldo} &euro;</span>
+                       </div>
                         <h4>Bem vindo &agrave; loja Online</h4>
-                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraCriarProduto} type="button">Criar um produto</button>
-                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraCriarAnuncio} type="button">Criar um anuncio</button>
-                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraVerAnuncios} type="button">Ver anuncios</button>
-                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraProdutosComprados} type="button">Ver os produtos que comprei</button>
-
+                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraCriarProduto} type="button">Criar um produto</button><br />
+                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraCriarAnuncio} type="button">Criar um anuncio</button><br />
+                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraVerAnuncios} type="button">Ver anuncios</button><br />
+                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraProdutosComprados} type="button">Ver os produtos que comprei</button><br />
+                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleVerMinhasReviews} type="button">Ver os produtos que comprei</button><br />
                     </div>
                 </div>
                 )
@@ -543,7 +607,7 @@ class Comprador extends Component {
                         </select>
 
                         <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleCriarAnuncio} type="button">Criar</button>
-                        <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleVoltaCriarProduto} type="button">Voltar</button>
+                        <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleVoltaCriarAnuncio} type="button">Voltar</button>
 
                     </div>
                 </div>
@@ -687,6 +751,78 @@ class Comprador extends Component {
                 </div>
          
                 )
+        }
+        if (this.state.mostraVerMinhasReviews) {
+            this.state.minhasReviews.forEach((element, index) => {
+                listaMinhasReviews.push(<li
+                    key={index}
+                    className="list-group-item"
+                    style={{
+                        margin: '15px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        borderRight: '4px solid #585c64',
+                        borderBottom: '4px solid #585c64'
+                    }}
+                >
+                    <p style={{ display: 'inline-block', textAlign: 'left' }}
+                    >
+                        <a onClick={() => this.handleMostarAnuncioClicado(element.anuncioFK)}
+                        style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+                        >
+                            Anuncio
+                        </a><br/>
+                        reviews: {element.conteudo}
+                    </p>
+                </li>
+                )
+            });
+
+
+            return (
+                <div className="row" style={{ width: "700px", paddingTop: "50px" }}>
+                    <div className="col-12">
+                        <div className="fixed-bar">
+                            <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleVoltarMinhasReviews} type="button">Voltar</button>
+                        </div>
+                        <ul className="list-group" style={{ marginTop: "15px" }}>
+                            {listaMinhasReviews}
+                        </ul>
+                    </div>
+                </div>
+                )
+        }
+
+        if (this.state.mostrarVerAnuncioClicado) {
+            let anuncio = this.state.anuncios;
+            this.handleNomeProdutoById(anuncio.produtoFK); 
+            return (
+                <div className="row" style={{ width: "700px", paddingTop: "50px" }}>
+                    <div className="col-12">
+                        <div className="fixed-bar">
+                            <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleVoltarAnuncioClicado} type="button">Voltar</button>
+                        </div>
+                        <ul className="list-group" style={{ marginTop: "15px" }}
+                            style={{
+                                margin: '15px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                borderRight: '4px solid #585c64',
+                                borderBottom: '4px solid #585c64',
+                                backgroundColor: "#ffffff",
+                                color: "#000000",
+                                textAlign: 'left',
+                                paddingLeft: '10px',
+                            }}
+                        >
+                            Nome do produto: {this.state.nomeProduto} <br />
+                            pre&ccedil;o:    {anuncio.preco} &euro;<br />
+                            vendedor:        {anuncio.vendedorFK}
+
+                        </ul>
+                    </div>
+                </div>
+            )
         }
 
         return (
