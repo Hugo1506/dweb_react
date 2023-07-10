@@ -26,6 +26,8 @@ class Comprador extends Component {
         minhasReviews: [],
         mostrarVerAnuncioClicado: false,
         nomeProduto: "",
+        mostrarQeuemComprou: false,
+        compradores: [],
 
     }
 
@@ -373,6 +375,7 @@ class Comprador extends Component {
     }
 
     handleVoltaEscreverReview = () => {
+        this.handleGetReviews();
         this.setState({ mostraEscreverReview: false });
         this.setState({ mostraVerReviews: true });
     }
@@ -477,6 +480,7 @@ class Comprador extends Component {
 
     handleVoltarAnuncioClicado = () => {
         this.handleGetProdutos();
+        this.handleGetAnuncios();
         this.setState({ mostrarVerAnuncioClicado: false });
         this.setState({ mostraVerMinhasReviews: true });
     }
@@ -489,6 +493,26 @@ class Comprador extends Component {
             })
             .catch(error => console.log('error', error));
     }
+
+    handleQuemComprou = (id) => {
+        fetch('https://localhost:7287/compradores/getQuemComprou?id=' + id)
+            .then(res => res.json())
+            .then(result => {
+                this.setState({ compradores: result });
+            })
+            .catch(error => console.log('error', error));
+    }
+
+    handleMostraQuemComprou = (id) => {
+        this.handleQuemComprou(id);
+        this.setState({ mostraProdutosComprados: false });
+        this.setState({ mostrarQeuemComprou: true });
+    }
+
+    handleVoltarQuemComprou = (id) => {
+        this.setState({ mostraProdutosComprados: true });
+        this.setState({ mostrarQeuemComprou: false });
+    } 
     
 
     render() {
@@ -500,6 +524,7 @@ class Comprador extends Component {
         let listaAnuncios = [];
         let listaProdutos = [];
         let listaMinhasReviews = [];
+        let ListaCompradores = [];
         
 
         if (this.state.mostrarRegistar) {
@@ -561,7 +586,7 @@ class Comprador extends Component {
                         <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraCriarAnuncio} type="button">Criar um anuncio</button><br />
                         <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraVerAnuncios} type="button">Ver anuncios</button><br />
                         <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraProdutosComprados} type="button">Ver os produtos que comprei</button><br />
-                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleVerMinhasReviews} type="button">Ver os produtos que comprei</button><br />
+                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleVerMinhasReviews} type="button">Ver as minhas reviews</button><br />
                     </div>
                 </div>
                 )
@@ -734,6 +759,9 @@ class Comprador extends Component {
                         Nome do produto: {element.nome}<br/>
                         Descri&ccedil;&atilde;o: {element.descricao}
                     </p>
+                    <button className="btn btn-secondary btn-lg mt-3" style={{ fontSize: 'inherit' }} onClick={() => this.handleMostraQuemComprou(element.id)} type="button" >
+                        Quem tamb&eacute;m comprou
+                    </button >
                 </li>
                 )
             });
@@ -819,6 +847,43 @@ class Comprador extends Component {
                             pre&ccedil;o:    {anuncio.preco} &euro;<br />
                             vendedor:        {anuncio.vendedorFK}
 
+                        </ul>
+                    </div>
+                </div>
+            )
+        }
+
+        if (this.state.mostrarQeuemComprou) {
+            this.state.compradores.forEach((element, index) => {
+                ListaCompradores.push(<li
+                    key={index}
+                    className="list-group-item"
+                    style={{
+                        margin: '15px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        borderRight: '4px solid #585c64',
+                        borderBottom: '4px solid #585c64'
+                    }}
+                >
+                    <p style={{ display: 'inline-block', textAlign: 'left' }}
+                    >
+                        username: {element.login}<br/>
+                        nome:     {element.nome}
+                    </p>
+                </li>
+                )
+            });
+
+
+            return (
+                <div className="row" style={{ width: "700px", paddingTop: "50px" }}>
+                    <div className="col-12">
+                        <div className="fixed-bar">
+                            <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleVoltarQuemComprou} type="button">Voltar</button>
+                        </div>
+                        <ul className="list-group" style={{ marginTop: "15px" }}>
+                            {ListaCompradores}
                         </ul>
                     </div>
                 </div>
