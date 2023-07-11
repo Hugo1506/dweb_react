@@ -28,11 +28,14 @@ class Comprador extends Component {
         nomeProduto: "",
         mostrarQeuemComprou: false,
         compradores: [],
-
+        mostrarSobre: false,
+        reviewClicada: 0,
+        mostraEditarReview:false,
     }
 
 
 
+    //envia o login e password para o servidor que vai fazer o login do user 
     handleLogin = async () => {
         let login_val = document.getElementById('loginInput').value;
         let password_val = document.getElementById('passwordInput').value;
@@ -59,6 +62,8 @@ class Comprador extends Component {
         }     
 
     }
+
+    //enviado o login e password para o servidor confere se o user já existe
     handleUserExists = (login_val, password_val) => {
         return fetch('https://localhost:7287/compradores/login', {
             method: 'POST',
@@ -70,7 +75,6 @@ class Comprador extends Component {
             .then(response => {
                 if (response.ok) {
                     return response.text().then(message => {
-                        console.log(message);
                         if (message != "O user existe" && message != "Password incorreta" && message != "formato errado") {
                             this.setState({ mostraMenu: true });
                             this.setState({ userId: message });
@@ -80,7 +84,6 @@ class Comprador extends Component {
                     });
                 } else {
                     return response.text().then(message => {
-                        console.log(message);
                         this.setState({ userExisteResponse: message });
                         return false;
                     });
@@ -91,20 +94,24 @@ class Comprador extends Component {
             });
     }
 
+    //mostra a página de registo
     handleRegist = () => {
         this.setState({ mostrarRegistar:true})
          
     }
 
+    //volta da página de registo para o login
     handleVoltarRegist = () => {
         this.setState({ mostrarRegistar : false})
     }
 
+    //mostra a página para criar um produto
     handleMostraCriarProduto = () => {
         this.setState({ mostraMenu: false });
         this.setState({ mostraCriarProduto: true }) 
     }
 
+    //envia o nome do produto e a sua descrição para o servidor que cria um novo produto
     handleCriarProduto = () => {
         let nomeProduto = document.getElementById('nomeProdutoInput').value;
         let descricaoProduto = document.getElementById('descricaoProdutoInput').value;
@@ -119,12 +126,10 @@ class Comprador extends Component {
             .then(response => {
                 if (response.ok) {
                     return response.text().then(message => {
-                        console.log(message);
                         this.setState({ criarProdutoResponse: message });
                     });
                 } else {
                     return response.text().then(message => {
-                        console.log(message);
                         this.setState({ criarProdutoResponse: message });
 
                     });
@@ -137,31 +142,36 @@ class Comprador extends Component {
 
     }
 
+    //mostra a página de criar anuncios
     handleMostraCriarAnuncio = () => {
         this.setState({ mostraMenu: false });
         this.setState({ mostraCriarAnuncio: true });
         this.handleGetProdutos();
     }
+
+    //volta da página de criar anuncios para o menu
     handleVoltaCriarAnuncio = () => {
         this.setState({ mostraCriarAnuncio: false });
         this.setState({ mostraMenu: true });
     }
 
+    //volta da página de criar produtos para o menu
     handleVoltaCriarProduto = () => {
         this.setState({ mostraCriarProduto: false });
         this.setState({ mostraMenu: true });
     }
 
+    //recebe os anuncios existentes na base de dados do servidor
     handleGetProdutos = () => {
         fetch("https://localhost:7287/compradores/getProdutos")
             .then(res => res.json())
             .then(result => {
-                console.log(result)
         this.setState({ produtos: result })
             })
             .catch(error => console.log('error', error));
     }
 
+    //mostra a página dos anuncios 
     handleMostraVerAnuncios =async () => {
         this.setState({ mostraMenu: false });
         await this.handleGetProdutos();
@@ -170,16 +180,17 @@ class Comprador extends Component {
         this.handleVerSaldo();
     }
 
+    //recebe do servidor todos os anuncios existentes
     handleGetAnuncios = () => {
         fetch("https://localhost:7287/compradores/getAnuncios")
             .then(res => res.json())
             .then(result => {
-                console.log(result)
                 this.setState({ anuncios: result })
             })
             .catch(error => console.log('error', error));
     }
 
+    //volta da página que mostra os anuncios para o menu
     handleVoltaVerAnuncios = () => {
         this.setState({ mostraVerAnuncios: false });
         this.setState({ mostraMenu: true });
@@ -187,15 +198,13 @@ class Comprador extends Component {
     }
 
  
-
+    //envia os dados de preço,id do produto e o userId do user para o servidor que vai criar um novo anuncio
     handleCriarAnuncio = () => {
         let preco = document.getElementById('precoAnuncioInput').value;
         let produto_nome = document.getElementById('produtoAnuncioInput').value;
         let produto = this.state.produtos.find((produto) => produto.nome === produto_nome);
 
         let produto_id = produto.id.toString();
-        console.log(preco);
-        console.log(produto_id);
         const requestBody = JSON.stringify({ produto_id: produto_id, preco: preco, userId: this.state.userId })
         return fetch('https://localhost:7287/compradores/createAnuncio', {
             method: 'POST',
@@ -207,13 +216,11 @@ class Comprador extends Component {
             .then(response => {
                 if (response.ok) {
                     return response.text().then(message => {
-                        console.log(message);
                         this.setState({ criarAnuncioResponse: message });
 
                     });
                 } else {
                     return response.text().then(message => {
-                        console.log(message);
                         this.setState({ criarAnuncioResponse: message });
 
                     });
@@ -224,6 +231,8 @@ class Comprador extends Component {
             });
     }
 
+    //envia os dados de email,password,confirmação de password,login,nome,telefone e dinheiro se os dados forem corretos
+    //um novo user é criado com sucesso caso contrario é recebida uma mensagem de erro do servidor 
     handleCreateUser = () => {
         let email_val = document.getElementById('emailInput').value;
         let password_val = document.getElementById('passwordInput').value;
@@ -267,13 +276,11 @@ class Comprador extends Component {
                 .then(response => {
                     if (response.ok) {
                         return response.text().then(message => {
-                            console.log(message);
                             this.setState({ userCriadoResponse: message });
 
                         });
                     } else {
                         return response.text().then(message => {
-                            console.log(message);
                             this.setState({ userCriadoResponse: message });
 
                         });
@@ -288,6 +295,7 @@ class Comprador extends Component {
        
     }
 
+    //sabendo o id de um produto retorna o seu nome 
     handleNomeProduto(produtoFK) {
         this.handleGetProdutos();
         let listaProdutos = this.state.produtos;
@@ -297,10 +305,10 @@ class Comprador extends Component {
     }
 
 
+    //envia o id do anuncio que vai ser comprado e o userId do user para o servidor que vai efetuar a operação de compra e devolver o saldo restante do user
     handleComprar = (id) => {
         let user_val = this.state.userId;
         let anuncio_val = id.toString();
-        console.log(anuncio_val);
         const requestBody = JSON.stringify({ anuncio: anuncio_val , user: user_val })
 
         this.handleVerSaldo();
@@ -314,13 +322,11 @@ class Comprador extends Component {
             .then(response => {
                 if (response.ok) {
                     return response.text().then(message => {
-                        console.log(message);
                         this.setState({ saldo: message });
 
                     });
                 } else {
                     return response.text().then(message => {
-                        console.log(message);
 
                     });
                 }
@@ -331,7 +337,7 @@ class Comprador extends Component {
     }
 
 
-
+    //enviando o userId do user recebe o seu saldo do servidor
     handleVerSaldo = () => {
         const userId = this.state.userId;
         fetch('https://localhost:7287/compradores/getSaldo?userId=' + userId)
@@ -342,17 +348,17 @@ class Comprador extends Component {
             .catch(error => console.log('error', error));
     }
 
-
+    //enviando o id de um anuncio recebe uma lista de reviews do servidor
     handleGetReviews = (id) => {
         fetch('https://localhost:7287/compradores/getReviews?anunc=' + id)
             .then(res => res.json())
             .then(result => {
-                console.log(result)
                 this.setState({ listaReviews: result })
             })
             .catch(error => console.log('error', error));
     }
 
+    //sai da página do anuncio e sabendo o id do anuncio clicado mostra as suas reviews
     handleVerReviews = (id) => {
         this.handleGetReviews(id);
         this.setState({ mostraVerAnuncios: false });
@@ -360,6 +366,7 @@ class Comprador extends Component {
         this.setState({ anuncioClicado: id });
     }
 
+    //sai da página que mostra as reviews de um anuncio e volta para a página que mostra os anuncios
     handleVoltaVerReviews = () => {
         this.setState({ listaReviews: [] });
         this.setState({ anuncios: [] });
@@ -368,18 +375,22 @@ class Comprador extends Component {
         this.handleGetAnuncios();
     }
 
+    //sai da página de ver as reviews feitas e abre a página para fazer uma nova review
     handleMostraEscreverReview = () => {
             this.setState({ mostraVerReviews: false });
             this.setState({mostraEscreverReview : true})
             
     }
 
+    //volta da página de escrever reviews para a página que mostra as reviews feitas 
     handleVoltaEscreverReview = () => {
         this.handleGetReviews();
         this.setState({ mostraEscreverReview: false });
         this.setState({ mostraVerReviews: true });
     }
 
+
+    //envia o conteudo, o userId do user e o id do anuncio para o servidor que por sua vez cria a review
     handleCriarReview = () => {
         let conteudo_val = document.getElementById("conteudoInput").value;
         let user_val = this.state.userId;
@@ -398,7 +409,6 @@ class Comprador extends Component {
                 .then(response => {
                     if (response.ok) {
                         return response.text().then(message => {
-                            console.log(message);                   
 
                         });
                     } 
@@ -409,75 +419,84 @@ class Comprador extends Component {
         }
     }
 
+    //enviando o login do vendedor recebe todos os anuncios feitos por esse vendedor do servidor
     handleVerAnunciosClick = (vendedor) => {
         fetch('https://localhost:7287/compradores/getAnunciosVendedor?vend=' + vendedor)
             .then(res => res.json())
             .then(result => {
-                console.log(result)
                 this.setState({ anuncios: result });
             })
             .catch(error => console.log('error', error));
     }
 
+    //mostra a página que mostra os produtos comprados pelo user
     handleMostraProdutosComprados = () => {
         this.setState({ mostraMenu: false });
         this.setState({ mostraProdutosComprados: true });
         this.handleGetProdutosComprados();
     }
 
+
+    //enviando o userId de um user recebe os produtos comprados por ele do servidor
     handleGetProdutosComprados = () => {
         let user = this.state.userId;
         fetch('https://localhost:7287/compradores/getProdutosComprados?user=' + user)
             .then(res => res.json())
             .then(result => {
-                console.log(result)
                 this.setState({ produtos: result });
             })
             .catch(error => console.log('error', error));
     }
 
+    //volta da página de produtos comprados para o menu
     handleVoltarProdutosComprados = () => {
         this.setState({ mostraMenu: true });
         this.setState({ mostraProdutosComprados: false });
     }
 
+
+    //enviando o userId do user recebe as reviews correspondentes a esse user no servidor
     handleGetMinhasReviews = () => {
         let user = this.state.userId;
         fetch('https://localhost:7287/compradores/getMeusReviews?user=' + user)
             .then(res => res.json())        
             .then(result => {
-                console.log(result)
                 this.setState({ minhasReviews: result });
             })
             .catch(error => console.log('error', error));
     }
 
+    //mostra uma página com todas as reviews do user autenticado
     handleVerMinhasReviews = () => {
         this.handleGetMinhasReviews();
         this.setState({ mostraVerMinhasReviews: true });
         this.setState({ mostraMenu: false });
     }
 
+    //volta da página minhas Reviews para o menu
     handleVoltarMinhasReviews = () => {
         this.setState({ mostraVerMinhasReviews: false });
         this.setState({ mostraMenu: true });
     }
 
+    //muda para a página do anuncio clicado sabendo que anuncio foi clicado pelo seu id
     handleMostarAnuncioClicado = (id) => {
         this.setState({ mostraVerMinhasReviews: false });
         this.handleGetAnuncioById(id);
         this.setState({ mostrarVerAnuncioClicado:true })
     }
+
+    //enviando o id de um anuncio recebe o anuncio do servidor
     handleGetAnuncioById = (id) => {
         fetch('https://localhost:7287/compradores/getAnuncioById?anunc=' + id)
             .then(res => res.json())
             .then(result => {
-                console.log(result)
                 this.setState({ anuncios: result });
             })
             .catch(error => console.log('error', error));
     }
 
+    //volta da página do anuncio clicado para a página minhas reviews
     handleVoltarAnuncioClicado = () => {
         this.handleGetProdutos();
         this.handleGetAnuncios();
@@ -485,6 +504,7 @@ class Comprador extends Component {
         this.setState({ mostraVerMinhasReviews: true });
     }
 
+    //enviando o id do produto para o servidor recebe o seu nome
     handleNomeProdutoById = (id) => {
         fetch('https://localhost:7287/compradores/getProdutoNomeById?id=' + id)
             .then(res => res.json())
@@ -494,6 +514,7 @@ class Comprador extends Component {
             .catch(error => console.log('error', error));
     }
 
+    //enviando o id do produto para o servidor recebe quem também comprou o produto
     handleQuemComprou = (id) => {
         fetch('https://localhost:7287/compradores/getQuemComprou?id=' + id)
             .then(res => res.json())
@@ -503,16 +524,80 @@ class Comprador extends Component {
             .catch(error => console.log('error', error));
     }
 
+    //mostra a página que mostra quem comprou tal produto
     handleMostraQuemComprou = (id) => {
         this.handleQuemComprou(id);
         this.setState({ mostraProdutosComprados: false });
         this.setState({ mostrarQeuemComprou: true });
     }
 
+    //volta da página de quem também comprou tal produto
     handleVoltarQuemComprou = (id) => {
         this.setState({ mostraProdutosComprados: true });
         this.setState({ mostrarQeuemComprou: false });
     } 
+
+    //mostra a página do sobre
+    handleVerSobre = () => {
+        this.setState({ mostrarSobre: true });
+        this.setState({ mostraMenu: false });
+    }
+
+    //volta da pagina do sobre
+    handleVoltarSobre = () => {
+        this.setState({ mostrarSobre: false });
+        this.setState({ mostraMenu: true });
+    }
+
+    //mostra a página de editar a review
+    handleMostraEditarReview = (id) => {
+        this.setState({ reviewClicada: id });
+        this.setState({ mostraVerMinhasReviews: false });
+        this.setState({ mostraEditarReview: true });
+
+    }
+
+    //envia o id e o novo conteudo para o servidor que irá atualizar a review
+    handleEditarReview = () => {
+        let id_val = this.state.reviewClicada.toString();
+        let conteudo_val = document.getElementById("conteudoEditInput").value;
+        const requestBody = JSON.stringify({ conteudo: conteudo_val,id : id_val })
+        return fetch('https://localhost:7287/compradores/editarReview', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: requestBody
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.text().then(message => {
+                        if (message == "review criada com sucesso") {
+                            this.handleGetMinhasReviews();
+                            this.handleVoltarEditarReview();
+                        }
+
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    //volta da pagina de editar Review
+    handleVoltarEditarReview = () => {
+        this.setState({ mostraEditarReview: false });
+        this.setState({ mostraVerMinhasReviews: true });
+    }
+
+    //apaga a review sabendo o seu id
+    handleApagarReview = async (id) => {
+        await fetch('https://localhost:7287/compradores/apagarReview?id=' + id)
+            .then(res => res.json())
+            .catch(error => console.log('error', error));
+        this.handleGetMinhasReviews();
+    }
     
 
     render() {
@@ -525,8 +610,9 @@ class Comprador extends Component {
         let listaProdutos = [];
         let listaMinhasReviews = [];
         let ListaCompradores = [];
-        
 
+
+        //página de registo
         if (this.state.mostrarRegistar) {
             return (
                 <div className="row" style={{ width: "1000px" }}>
@@ -573,6 +659,8 @@ class Comprador extends Component {
                 </div>
             );
         }
+
+        //Menu da aplicação 
         if (this.state.mostraMenu) {
             this.handleVerSaldo();
             return (
@@ -587,11 +675,13 @@ class Comprador extends Component {
                         <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraVerAnuncios} type="button">Ver anuncios</button><br />
                         <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraProdutosComprados} type="button">Ver os produtos que comprei</button><br />
                         <button className="btn btn-primary btn-lg mt-3" onClick={this.handleVerMinhasReviews} type="button">Ver as minhas reviews</button><br />
+                        <button className="btn btn-primary btn-lg mt-3" onClick={this.handleVerSobre} type="button">Sobre</button><br />
                     </div>
                 </div>
                 )
         }
 
+        //página para criar um novo produto
         if (this.state.mostraCriarProduto) {
             return (
                 <div className="row" style={{ width: "500px" }}>
@@ -613,6 +703,7 @@ class Comprador extends Component {
             
         }
 
+        //página para criar um nov anuncio
         if (this.state.mostraCriarAnuncio) {
             
             const options = this.state.produtos.map((produto) => (
@@ -639,6 +730,7 @@ class Comprador extends Component {
             )
         }
 
+        //página para ver os anuncios existentes
         if (this.state.mostraVerAnuncios) {
             this.state.anuncios.forEach(element => {
                 listaAnuncios.push(<li
@@ -685,6 +777,7 @@ class Comprador extends Component {
             )
         }
 
+        //página para ver as reviews existentes de um anuncio
         if (this.state.mostraVerReviews) {
             const reviews = this.state.listaReviews.map(element => {
 
@@ -712,7 +805,10 @@ class Comprador extends Component {
             return (
                 <div className="row" style={{ width: "500px" }}>
                     <div className="col-12">
-                        {reviews}
+                        
+                        <ul className="list-group" style={{ marginTop: "55px" }}>
+                            {reviews}
+                        </ul>
                         <div className="fixed-bar">
                             <button className="btn btn-primary btn-lg mt-3" onClick={this.handleMostraEscreverReview} type="button">escrever uma review</button>          
 
@@ -725,6 +821,7 @@ class Comprador extends Component {
             )
         }
 
+        //página para escrever uma review de um anuncio
         if (this.state.mostraEscreverReview) {
             return (
                 <div className="row" style={{ width: "500px" }}>
@@ -740,8 +837,9 @@ class Comprador extends Component {
                 </div>
             )
         }
+
+        //página que mostra os produtos comprados pelo user
         if (this.state.mostraProdutosComprados) {
-            console.log(this.state.produtos);
             this.state.produtos.forEach((element,index) => {
                 listaProdutos.push(<li
                     key={index }
@@ -780,6 +878,8 @@ class Comprador extends Component {
          
                 )
         }
+
+        //página que mostra as reviews feitas pelo user
         if (this.state.mostraVerMinhasReviews) {
             this.state.minhasReviews.forEach((element, index) => {
                 listaMinhasReviews.push(<li
@@ -800,8 +900,14 @@ class Comprador extends Component {
                         >
                             Anuncio
                         </a><br/>
-                        reviews: {element.conteudo}
+                        review: {element.conteudo}
                     </p>
+                    <button className="btn btn-secondary btn-lg mt-3" style={{ fontSize: 'inherit' }} onClick={() => this.handleMostraEditarReview(element.id)} type="button" >
+                        Editar
+                    </button >
+                    <button className="btn btn-secondary btn-lg mt-3" style={{ fontSize: 'inherit' }} onClick={() => this.handleApagarReview(element.id)} type="button" >
+                        Apagar
+                    </button >
                 </li>
                 )
             });
@@ -821,6 +927,7 @@ class Comprador extends Component {
                 )
         }
 
+        //página que mostra o anuncio clicado na página de reviews do user
         if (this.state.mostrarVerAnuncioClicado) {
             let anuncio = this.state.anuncios;
             this.handleNomeProdutoById(anuncio.produtoFK); 
@@ -853,6 +960,7 @@ class Comprador extends Component {
             )
         }
 
+        //página que mostra quem também comprou o produto comprado pelo user
         if (this.state.mostrarQeuemComprou) {
             this.state.compradores.forEach((element, index) => {
                 ListaCompradores.push(<li
@@ -890,6 +998,57 @@ class Comprador extends Component {
             )
         }
 
+        //página que mostra o curso a cadeira o nome e nº do autor e as frameworks usadas
+        if (this.state.mostrarSobre) {
+            return (
+                <div className="row" style={{ width: "700px", paddingTop: "50px" }}>
+                    <div className="col-12">
+                        <div className="fixed-bar">
+                            <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleVoltarSobre} type="button">Voltar</button>
+                        </div>
+                        <p
+                            style={{
+                                margin: '15px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                borderRight: '4px solid #585c64',
+                                borderBottom: '4px solid #585c64',
+                                backgroundColor: '#ffffff',
+                                color: '#000000',
+                                textAlign: 'left',
+
+                            }}
+                        >
+
+                            Engenharia Inform&aacute;tica, Desenvolvimento web 2022/2023<br />
+                            Aluno: Hugo Marques n&deg; 24171<br />
+                            Frameworks usadas front end: React, bootstrap<br />
+                                              Back end : ASP.NET, ASP.NET Core MVC e EntityFramework
+     
+                        </p>
+                    </div>
+                </div>
+            )
+        }
+
+        //página de Editar um review
+        if (this.state.mostraEditarReview) {
+            return (
+                <div className="row" style={{ width: "500px" }}>
+                    <div className="col-12">
+                        <h4>Edite a review</h4>
+                        <label htmlFor="conteudoEditInput" className="form-label">conteudo</label>
+                        <textarea style={{ height: "100px" }} type="textArea" className="form-control" id="conteudoEditInput" placeholder="Escreva a sua review aqui" />
+
+                        <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleEditarReview} type="button">Editar</button>
+                        <button className="btn btn-primary btn-lg mt-3 " onClick={this.handleVoltarEditarReview} type="button">Voltar</button>
+
+                    </div>
+                </div>
+            )
+        }
+
+        //página de login (página inicial)
         return (
             <div className="row" style={{ width: "500px" }}>        
                 <div className="col-12">
